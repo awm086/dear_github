@@ -1,0 +1,37 @@
+#!/usr/bin/ruby -w
+require 'date'
+require 'fileutils'
+
+# OMG PLZ SEND PULL REQUESTS WITH MORE AWESOME MSGS
+messages = [
+  "My kid's appointment at the pediatrician can wait, I need to get this commit in.",
+  "Sorry honey, I need to keep my streak going - we'll have sex tomorrow!",
+  "This commit brought to you by my privilege.",
+  "My employer lets me use work time to contribute to open source."
+]
+
+rr = "Never gonna give you up Never gonna let you down Never gonna run around and desert you Never gonna make you cry Never gonna say goodbye Never gonna tell a lie and hurt you"
+
+# yay sloppy!
+raise 'plz run from master, kthx' unless `git rev-parse --abbrev-ref HEAD`.strip == 'master'
+start = `git ls-remote https://github.com/sdboyer/dear_github_can_i_go_home_now.git`.strip.match(/([a-z0-9]{40})\trefs\/heads\/genesis/)
+`git reset --hard #{start[1]}`
+
+puts 'Traveling back in time to the founding of Github! (actually, just a year.)'
+i = 0
+Date.today.prev_year.step(Date.today) do |day|
+  str = rr.split(' ')[i % 34]
+  extra = i % 34 == 0 ? "\n" : ' '
+  str = extra << str if i != 0
+
+  File.open('self_worth', 'a') { |f| f.write(str) }
+  File.open('msg', 'w') { |f| f.write(messages.sample) }
+  t = day.to_time + 14400 + rand(57600)
+  system({'GIT_COMMITTER_DATE' => t.to_s, 'GIT_AUTHOR_DATE' => t.to_s}, "git commit -q -F msg -- self_worth")
+  i += 1
+  $stdout.write "\r\033[KProving your worth with commits in #{day.strftime('%B, %Y')}..."
+end
+
+FileUtils.rm 'msg'
+
+puts "\n\nNow show the world you are worth the physical space your body occupies - PUSH TO GITHUB! (`git push origin master`)"
